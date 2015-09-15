@@ -12,13 +12,12 @@ using Emgu.CV;
 public class PDepth : MonoBehaviour {
 
 	// We'll use these to control our particle system
-	public double num=0;
+	private double UVmap_shift=0.0; //Shifting of UV-mapping to inline with the computed surrounding depth-color map
 	public IisuInputProvider IisuInput;
 	public ParticleSystem PS; //Our particle system
 	public float MaxPointSize; // Size of particles
 	public int Xgrid, Ygrid; // Num of particles in grid (along horizontal x-axis, along vertical y-axis)
-	public float MaxSceneDepth, MaxWorldDepth; // Maximum Z-amount for particle positions
-	// and Maximum distance from camera to SEARCH for depth points
+	public float MaxSceneDepth, MaxWorldDepth; // Maximum Z-amount for particle positions, and Maximum distance from camera to SEARCH for depth points
 //	private int startXindex=0,endXindex=320,startYindex=0,endYIndex=240;
 //	private int startXindex=0,endXindex=290,startYindex=46,endYIndex=208;// Index of pixels that have positive UV values in the UV image map, Saves computations on grabbing pixels with negative UV values
 	private int startXindex=40,endXindex=280,startYindex=35,endYIndex=220; //Index of pixels (tested with the rendering of surroundings)
@@ -154,13 +153,13 @@ public class PDepth : MonoBehaviour {
 		uint color_byte_size = (uint)colorimage.ImageInfos.BytesRaw;
 
 		Emgu.CV.CvInvoke.Resize (cvcolorSource, cvcolorSource2, cvcolorSource2.Size, 0.5, 0.66666666666, Emgu.CV.CvEnum.Inter.Linear);
-		Emgu.CV.CvInvoke.Undistort(cvdepthSource, cvdepthUndistorted, depthIntrinsicsMat, depthDistortCoeff, null);
+//		Emgu.CV.CvInvoke.Undistort(cvdepthSource, cvdepthUndistorted, depthIntrinsicsMat, depthDistortCoeff, null);
 		Emgu.CV.CvInvoke.Undistort(cvcolorSource2, cvcolorUndistorted, colorIntrinsicsMat, colorDistortCoeff, null);
 
 		// copy image content into managed arrays
-		Marshal.Copy(cvdepthUndistorted.DataPointer, depthimageRaw, 0, (int)byte_size);
+//		Marshal.Copy(cvdepthUndistorted.DataPointer, depthimageRaw, 0, (int)byte_size);
 		Marshal.Copy(cvcolorUndistorted.DataPointer, colorUndistortedimageRaw, 0, (int)480*640*1*4);
-//		Marshal.Copy(depthimage.Raw, depthimageRaw, 0, (int)byte_size);
+		Marshal.Copy(depthimage.Raw, depthimageRaw, 0, (int)byte_size);
 		Marshal.Copy(colorimage.Raw, colorimageRaw, 0, (int)color_byte_size);
 		Marshal.Copy(uvimagemap.Raw, UVimageRaw, 0, (int)UV_byte_size);
 
@@ -214,8 +213,15 @@ public class PDepth : MonoBehaviour {
 					u_value = System.BitConverter.ToSingle(UVimageRaw, didx * 8);
 					v_value = System.BitConverter.ToSingle(UVimageRaw, didx * 8 + 4);
 
+					// Assign appropriate shifting value based on pixel depth value
+					UVmap_shift = 0.0;
+					if (value < 750) {
+						if (value <= 300) { UVmap_shift = 0.04;}
+						else { UVmap_shift = 0.04 / Math.Pow(2.0, (((double)value/250.0)-1.0)/0.5 ); }
+					}
+
 					// Get the correct index of a pixel in the color image byte array by its UV coordinates
-					colorIndex = (int)((u_value+num) * colorimageWidth) + ((int)(v_value * colorimageHeight ) * colorimageWidth);
+					colorIndex = (int)((u_value+UVmap_shift) * colorimageWidth) + ((int)(v_value * colorimageHeight ) * colorimageWidth);
 
 					if (colorIndex < 0 | colorIndex > 921599) { // Just a precautionary measure to capture pixels with negative UV coordinates
 						//These particles have valid depth values but no color associated with it
