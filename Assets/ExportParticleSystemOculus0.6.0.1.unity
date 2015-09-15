@@ -1355,7 +1355,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63bb83cc63af2884ba4b41c15572484e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  num: 0
   IisuInput: {fileID: 43}
   PS: {fileID: 1016494010}
   MaxPointSize: 5
@@ -1367,7 +1366,7 @@ MonoBehaviour:
   NormRatioBackgroundY: 1
   backgroundXoffset: -45.4000015
   backgroundYoffset: -26.2999992
-  particleDepthDist: 1458
+  particleDepthDist: 550
 --- !u!1 &1211233366
 GameObject:
   m_ObjectHideFlags: 0
@@ -1465,7 +1464,7 @@ AudioSource:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2048981528}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 2d6adafdb1f942641ac875d2e00af09c, type: 3}

@@ -289,7 +289,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63bb83cc63af2884ba4b41c15572484e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  num: 0
   IisuInput: {fileID: 43}
   PS: {fileID: 189839901}
   MaxPointSize: 5
@@ -298,7 +297,7 @@ MonoBehaviour:
   MaxSceneDepth: 70
   MaxWorldDepth: 100
   NormRatioBackgroundX: 1.29999995
-  NormRatioBackgroundY: 1
+  NormRatioBackgroundY: 5
   backgroundXoffset: -52
   backgroundYoffset: -7.5
   particleDepthDist: 550
