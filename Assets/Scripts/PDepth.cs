@@ -21,9 +21,9 @@ public class PDepth : MonoBehaviour {
 //	private int startXindex=0,endXindex=320,startYindex=0,endYIndex=240;
 //	private int startXindex=0,endXindex=290,startYindex=46,endYIndex=208;// Index of pixels that have positive UV values in the UV image map, Saves computations on grabbing pixels with negative UV values
 	private int startXindex=40,endXindex=280,startYindex=35,endYIndex=220; //Index of pixels (tested with the rendering of surroundings)
-	private float NormRatioGridDistX=1f, NormRatioGridDistY=1f; //The normalized (range 0 to 1) distances of the normal particle system grid
-	public float NormRatioBackgroundX, NormRatioBackgroundY; //The length ratios to render the background colors(A rough hack to match with particle system)
-	public float backgroundXoffset, backgroundYoffset;
+	public float NormRatioGridDistX=1.0f, NormRatioGridDistY=1.0f; //The normalized (range 0 to 1) distances of the normal particle system grid
+	public float NormRatioBackgroundX=1.3f, NormRatioBackgroundY=1.0f; //The length ratios to render the background colors(A rough hack to match with particle system)
+	public float backgroundXoffset, backgroundYoffset, gridXoffset, gridYoffset;
 	public int particleDepthDist = 550; //The Depth cut off value for particles (in millimeters) - Can be the person's height
 
 	private ParticleSystem.Particle[] points; //holds individual particle objects
@@ -33,7 +33,7 @@ public class PDepth : MonoBehaviour {
 	private IImageData depthimage, uvimagemap, colorimage;
 	private int depthX, depthY, colorimageWidth, colorimageHeight;
 	private float floatConvertor = 1f / 255f;
-	private float particleDepthWeight = 50f; // A weight placed on normalized depth values of particles
+	private float particleDepthWeight = 1f; //50f; // A weight placed on normalized depth values of particles
 	/*
 	 * Note that the particle system size grid is fixed, but we can change its particle spacing which tentatively reduces
 	 * the number of particles in the whole particle system. We could change the whole size of the particle system grid in
@@ -235,8 +235,8 @@ public class PDepth : MonoBehaviour {
 						byte R = (colorimageRaw[colorIndex * 4 + 2]);
 						byte A = (colorimageRaw[colorIndex * 4 + 3]);
 						points[pid].color = new Color(R*floatConvertor, G*floatConvertor, B*floatConvertor, A*floatConvertor);
-						points[pid].position = new UnityEngine.Vector3(dx*NormRatioGridDistX, 
-						                                               (depthY-dy)*NormRatioGridDistY, 
+						points[pid].position = new UnityEngine.Vector3(dx*NormRatioGridDistX+gridXoffset, 
+						                                               (depthY-dy)*NormRatioGridDistY+gridYoffset, 
 						                                               (lmap(value * floatConvertor,0,MaxWorldDepth,0,MaxSceneDepth))*particleDepthWeight);
 					}
 				}
@@ -245,9 +245,6 @@ public class PDepth : MonoBehaviour {
 
 			}
 		}
-//		Debug.Log ("0 is " + N1.Data [0, 100]);
-//		Debug.Log ("1 is " + N1.Data [1, 100]);
-//		Debug.Log ("2 is " + N1.Data [2, 100]);
 		PS.SetParticles(points, points.Length);
 	
 	}

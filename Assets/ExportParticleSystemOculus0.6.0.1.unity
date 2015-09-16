@@ -1362,6 +1362,8 @@ MonoBehaviour:
   Ygrid: 240
   MaxSceneDepth: 70
   MaxWorldDepth: 100
+  NormRatioGridDistX: 1
+  NormRatioGridDistY: 1
   NormRatioBackgroundX: 1.29999995
   NormRatioBackgroundY: 1
   backgroundXoffset: -45.4000015
