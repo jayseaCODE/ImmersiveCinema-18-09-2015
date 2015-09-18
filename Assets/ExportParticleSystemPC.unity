@@ -294,15 +294,20 @@ MonoBehaviour:
   MaxPointSize: 5
   Xgrid: 320
   Ygrid: 240
-  MaxSceneDepth: 70
-  MaxWorldDepth: 100
-  NormRatioGridDistX: 1.29999995
-  NormRatioGridDistY: 1
-  NormRatioBackgroundX: 1.29999995
+  MaxSceneDepth: 1500
+  MaxWorldDepth: 1500
+  NormRatioGridX: 1
+  NormRatioGridY: 1
+  NormRatioBackgroundX: 1
   NormRatioBackgroundY: 1
-  backgroundXoffset: -52
-  backgroundYoffset: -7.5
+  backgroundXoffset: -33
+  backgroundYoffset: 0
+  gridXoffset: -33
+  gridYoffset: 0
   particleDepthDist: 550
+  displaydist: 95
+  particleDepthWeight: 1
+  test_dist: 250
 --- !u!198 &189839901
 ParticleSystem:
   m_ObjectHideFlags: 0
