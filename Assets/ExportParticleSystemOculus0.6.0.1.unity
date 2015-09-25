@@ -1360,8 +1360,6 @@ MonoBehaviour:
   MaxPointSize: 5
   Xgrid: 320
   Ygrid: 240
-  MaxSceneDepth: 70
-  MaxWorldDepth: 100
   NormRatioGridX: 1
   NormRatioGridY: 1
   NormRatioBackgroundX: 1
@@ -1373,6 +1371,15 @@ MonoBehaviour:
   particleDepthDist: 550
   displaydist: 95
   particleDepthWeight: 1
+  OculusTransform: {fileID: 35149080}
+  headTimer: 0
+  quaternion_y: 0
+  Prev_quaternion_y: 0
+  timeToShakeHead: .5
+  changesInY: 0
+  signChangesInY: 0
+  currentSign: 1
+  speed: 0
 --- !u!1 &1211233366
 GameObject:
   m_ObjectHideFlags: 0

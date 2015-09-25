@@ -17,7 +17,7 @@ public class PDepth : MonoBehaviour {
 	public ParticleSystem PS; //Our particle system
 	public float MaxPointSize; // Size of particles
 	public int Xgrid, Ygrid; // Num of particles in grid (along horizontal x-axis, along vertical y-axis)
-	public float MaxSceneDepth, MaxWorldDepth; // Maximum Z-amount for particle positions, and Maximum distance from camera to SEARCH for depth points
+//	public float MaxSceneDepth, MaxWorldDepth; // Maximum Z-amount for particle positions, and Maximum distance from camera to SEARCH for depth points
 //	private int startXindex=0,endXindex=320,startYindex=0,endYIndex=240;
 //	private int startXindex=0,endXindex=290,startYindex=46,endYIndex=208;// Index of pixels that have positive UV values in the UV image map, Saves computations on grabbing pixels with negative UV values
 	private int startXindex=40,endXindex=280,startYindex=35,endYIndex=220; //Index of pixels (tested with the rendering of surroundings)
@@ -35,6 +35,15 @@ public class PDepth : MonoBehaviour {
 	private IImageData depthimage, uvimagemap, colorimage;
 	private int depthX, depthY, colorimageWidth, colorimageHeight;
 	private float floatConvertor = 1f / 255f;
+	public Transform OculusTransform;
+	public float headTimer=0f; 
+	private float fadeOutWaitingTimer = 1f; // Timer used to smoothen the fading out of real world
+	private float fadeInWaitingTimer = 1f; // Timer used to smoothen the fading into real world
+	public float quaternion_y=0f, Prev_quaternion_y=0f;
+	public float timeToShakeHead = 1f;
+	public float changesInY = 0f, signChangesInY = 0f;
+	public float currentSign = 1.0f; //Start out with positive
+	public float speed=0f;
 	/*
 	 * Note that the particle system size grid is fixed, but we can change its particle spacing which tentatively reduces
 	 * the number of particles in the whole particle system. We could change the whole size of the particle system grid in
@@ -136,7 +145,7 @@ public class PDepth : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-
+		// Initialization
 		if (depthimage == null )
 			return;
 		if (depthimage.Raw == IntPtr.Zero )
@@ -147,7 +156,6 @@ public class PDepth : MonoBehaviour {
 			colorUndistortedimageRaw = new byte[480*640*1*4];
 		if (UVimageRaw == null || UVimageRaw.Length != uvimagemap.ImageInfos.BytesRaw)
 			UVimageRaw = new byte[uvimagemap.ImageInfos.BytesRaw];
-		
 		uint byte_size = (uint)depthimage.ImageInfos.BytesRaw;
 		//Debug.Log("color byte size "+color_byte_size);
 		uint UV_byte_size = (uint)uvimagemap.ImageInfos.BytesRaw;
@@ -158,12 +166,15 @@ public class PDepth : MonoBehaviour {
 		Emgu.CV.CvInvoke.Undistort(cvdepthSource, cvdepthUndistorted, depthIntrinsicsMat, depthDistortCoeff, null);
 		Emgu.CV.CvInvoke.Undistort(cvcolorSource2, cvcolorUndistorted, colorIntrinsicsMat, colorDistortCoeff, null);
 
-		// copy image content into managed arrays
+		// Copy image content into managed arrays
 		Marshal.Copy(cvdepthUndistorted.DataPointer, depthimageRaw, 0, (int)byte_size);
 		Marshal.Copy(cvcolorUndistorted.DataPointer, colorUndistortedimageRaw, 0, (int)480*640*1*4);
 //		Marshal.Copy(depthimage.Raw, depthimageRaw, 0, (int)byte_size);
 		Marshal.Copy(colorimage.Raw, colorimageRaw, 0, (int)color_byte_size);
 		Marshal.Copy(uvimagemap.Raw, UVimageRaw, 0, (int)UV_byte_size);
+
+		// Check for head movement
+		UserHeadMovement();
 
 		int pid=0, colorIndex=0, toIndex=0;
 		float u_value, v_value;
@@ -251,6 +262,48 @@ public class PDepth : MonoBehaviour {
 		}
 		PS.SetParticles(points, points.Length);
 	
+	}
+
+	private void UserHeadMovement()
+	{
+		if (headTimer == 0) {
+			Prev_quaternion_y = quaternion_y;
+		}
+		else if (headTimer >= timeToShakeHead) {
+			headTimer = 0f;
+			//			changesInY = 0f;
+			if (signChangesInY >= 2) {
+				if (particleDepthDist < 1550) particleDepthDist += (int)(1000 * Math.Exp(fadeInWaitingTimer) * Time.deltaTime);
+				fadeInWaitingTimer += Time.deltaTime;
+				fadeOutWaitingTimer = 1f;
+			}
+			else {
+				if (particleDepthDist > 50) particleDepthDist -= (int)(100 * Math.Exp(fadeOutWaitingTimer) * Time.deltaTime);
+				fadeOutWaitingTimer += Time.deltaTime;
+				fadeInWaitingTimer = 1f;
+			}
+			signChangesInY = 0f;
+		}
+		else {
+			quaternion_y = OculusTransform.rotation.y;
+			if ( (quaternion_y - Prev_quaternion_y) > 0.15 ) { 
+				if (currentSign < 0) {
+					signChangesInY += 1; // Add one to number of sign changes
+					currentSign *= -1; // Switch the sign from negative to positive
+				}
+			}
+			else { 
+				if (currentSign > 0) {
+					signChangesInY += 1;
+					currentSign *= -1; // Switch the sign from positive to negative
+				}
+			}
+			//			changesInY += Mathf.Abs(Prev_quaternion_y-quaternion_y);
+			//			speed = changesInY/Time.deltaTime;
+			Prev_quaternion_y = quaternion_y;
+		}
+		headTimer += Time.deltaTime;
+
 	}
 
 	private void indexEquivalent( int sourceDepthU, double UndistortedColorWidth, out int sourceColorIndex)
